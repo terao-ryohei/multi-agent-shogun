@@ -697,8 +697,20 @@ if [ "$SETUP_ONLY" = false ]; then
         log_info "  └─ 将軍（${_shogun_cli_type}）、召喚完了"
     fi
 
-    # 少し待機（安定のため）
-    sleep 1
+    # 将軍の起動確認（最大60秒待機）
+    wait_start=$(date +%s)
+    while true; do
+        if tmux capture-pane -t "shogun:main" -p | grep -q "bypass permissions"; then
+            elapsed=$(( $(date +%s) - wait_start ))
+            log_info "  └─ 将軍、起動確認完了（${elapsed}秒）"
+            break
+        fi
+        if [ $(( $(date +%s) - wait_start )) -ge 60 ]; then
+            log_war "  └─ 将軍、起動確認タイムアウト（60秒）。次へ進む"
+            break
+        fi
+        sleep 1
+    done
 
     # 家老（pane 0）: CLI Adapter経由でコマンド構築（デフォルト: Sonnet）
     p=$((PANE_BASE + 0))
@@ -717,6 +729,21 @@ if [ "$SETUP_ONLY" = false ]; then
     tmux send-keys -t "multiagent:agents.${p}" "$_karo_cmd"
     tmux send-keys -t "multiagent:agents.${p}" Enter
     log_info "  └─ 家老（${_karo_cli_type}）、召喚完了"
+
+    # 家老の起動確認（最大60秒待機）
+    wait_start=$(date +%s)
+    while true; do
+        if tmux capture-pane -t "multiagent:agents.${p}" -p | grep -q "bypass permissions"; then
+            elapsed=$(( $(date +%s) - wait_start ))
+            log_info "  └─ 家老、起動確認完了（${elapsed}秒）"
+            break
+        fi
+        if [ $(( $(date +%s) - wait_start )) -ge 60 ]; then
+            log_war "  └─ 家老、起動確認タイムアウト（60秒）。次へ進む"
+            break
+        fi
+        sleep 1
+    done
 
     if [ "$KESSEN_MODE" = true ]; then
         # 決戦の陣: CLI Adapter経由（claudeはOpus強制）
@@ -740,8 +767,24 @@ if [ "$SETUP_ONLY" = false ]; then
             tmux set-option -p -t "multiagent:agents.${p}" @agent_cli "$_ashi_cli_type"
             tmux send-keys -t "multiagent:agents.${p}" "$_ashi_cmd"
             tmux send-keys -t "multiagent:agents.${p}" Enter
+            log_info "  └─ 足軽${i}（${_ashi_cli_type} / 決戦の陣）、召喚完了"
+
+            # 足軽の起動確認（最大60秒待機）
+            wait_start=$(date +%s)
+            while true; do
+                if tmux capture-pane -t "multiagent:agents.${p}" -p | grep -q "bypass permissions"; then
+                    elapsed=$(( $(date +%s) - wait_start ))
+                    log_info "  └─ 足軽${i}、起動確認完了（${elapsed}秒）"
+                    break
+                fi
+                if [ $(( $(date +%s) - wait_start )) -ge 60 ]; then
+                    log_war "  └─ 足軽${i}、起動確認タイムアウト（60秒）。次へ進む"
+                    break
+                fi
+                sleep 1
+            done
         done
-        log_info "  └─ 足軽1-${_ASHIGARU_COUNT}（決戦の陣）、召喚完了"
+        log_info "  └─ 足軽1-${_ASHIGARU_COUNT}（決戦の陣）、全員召喚完了"
     else
         # 平時の陣: CLI Adapter経由（デフォルト: 全足軽=Sonnet）
         for i in $(seq 1 "$_ASHIGARU_COUNT"); do
@@ -760,8 +803,24 @@ if [ "$SETUP_ONLY" = false ]; then
             tmux set-option -p -t "multiagent:agents.${p}" @agent_cli "$_ashi_cli_type"
             tmux send-keys -t "multiagent:agents.${p}" "$_ashi_cmd"
             tmux send-keys -t "multiagent:agents.${p}" Enter
+            log_info "  └─ 足軽${i}（${_ashi_cli_type} / 平時の陣）、召喚完了"
+
+            # 足軽の起動確認（最大60秒待機）
+            wait_start=$(date +%s)
+            while true; do
+                if tmux capture-pane -t "multiagent:agents.${p}" -p | grep -q "bypass permissions"; then
+                    elapsed=$(( $(date +%s) - wait_start ))
+                    log_info "  └─ 足軽${i}、起動確認完了（${elapsed}秒）"
+                    break
+                fi
+                if [ $(( $(date +%s) - wait_start )) -ge 60 ]; then
+                    log_war "  └─ 足軽${i}、起動確認タイムアウト（60秒）。次へ進む"
+                    break
+                fi
+                sleep 1
+            done
         done
-        log_info "  └─ 足軽1-${_ASHIGARU_COUNT}（平時の陣）、召喚完了"
+        log_info "  └─ 足軽1-${_ASHIGARU_COUNT}（平時の陣）、全員召喚完了"
     fi
 
     # 軍師（pane _ASHIGARU_COUNT+1）: Opus Thinking — 戦略立案・設計判断専任
@@ -781,6 +840,21 @@ if [ "$SETUP_ONLY" = false ]; then
     tmux send-keys -t "multiagent:agents.${p}" "$_gunshi_cmd"
     tmux send-keys -t "multiagent:agents.${p}" Enter
     log_info "  └─ 軍師（${_gunshi_cli_type} / Opus Thinking）、召喚完了"
+
+    # 軍師の起動確認（最大60秒待機）
+    wait_start=$(date +%s)
+    while true; do
+        if tmux capture-pane -t "multiagent:agents.${p}" -p | grep -q "bypass permissions"; then
+            elapsed=$(( $(date +%s) - wait_start ))
+            log_info "  └─ 軍師、起動確認完了（${elapsed}秒）"
+            break
+        fi
+        if [ $(( $(date +%s) - wait_start )) -ge 60 ]; then
+            log_war "  └─ 軍師、起動確認タイムアウト（60秒）。次へ進む"
+            break
+        fi
+        sleep 1
+    done
 
     if [ "$KESSEN_MODE" = true ]; then
         log_success "✅ 決戦の陣で出陣！全軍Opus！"
@@ -860,16 +934,7 @@ NINJA_EOF
     echo -e "                               \033[0;36m[ASCII Art: syntax-samurai/ryu - CC0 1.0 Public Domain]\033[0m"
     echo ""
 
-    echo "  Claude Code の起動を待機中（最大30秒）..."
-
-    # 将軍の起動を確認（最大30秒待機）
-    for i in {1..30}; do
-        if tmux capture-pane -t shogun:main -p | grep -q "bypass permissions"; then
-            echo "  └─ 将軍の Claude Code 起動確認完了（${i}秒）"
-            break
-        fi
-        sleep 1
-    done
+    # 将軍の起動確認は STEP 6 の順次起動で完了済み
 
     # ═══════════════════════════════════════════════════════════════════
     # STEP 6.6: inbox_watcher起動（全エージェント）
@@ -919,6 +984,17 @@ NINJA_EOF
     disown
 
     log_success "  └─ $((_ASHIGARU_COUNT + 3))エージェント分のinbox_watcher起動完了（将軍+家老+足軽${_ASHIGARU_COUNT}+軍師）"
+
+    # ═══════════════════════════════════════════════════════════════
+    # STEP 6.6.5: 全員挨拶送信
+    # ═══════════════════════════════════════════════════════════════
+    log_info "🎌 全軍に挨拶要求を送信中..."
+    sleep 3  # inbox_watcherが安定するのを待つ
+    for agent in karo $_ASHIGARU_IDS_STR gunshi; do
+        bash "$SCRIPT_DIR/scripts/inbox_write.sh" "$agent" \
+            "出陣じゃ！本日の意気込みを一言申せ。" morning_greeting shogun
+    done
+    log_info "  └─ 全軍への挨拶要求送信完了"
 
     # STEP 6.7 は廃止 — CLAUDE.md Session Start (step 1: tmux agent_id) で各自が自律的に
     # 自分のinstructions/*.mdを読み込む。検証済み (2026-02-08)。

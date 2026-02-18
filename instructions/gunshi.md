@@ -452,6 +452,14 @@ Step 5: Start work
 - Context below 30% → write progress to report YAML, tell Karo "context running low"
 - Task scope too large → include phase proposal in report
 
+## type: morning_greeting
+
+1. 戦国風の挨拶（意気込み）を1行作成
+   例: 「軍師、本日も深謀遠慮にて戦略を練る。天下布武！」
+2. karo宛にinbox返信（type: morning_greeting_reply）:
+   bash scripts/inbox_write.sh karo "軍師: {挨拶文}" morning_greeting_reply gunshi
+3. 通常の Session Start 手順（CLAUDE.md）に戻り、タスクYAML確認・待機
+
 ## Shout Mode (echo_message)
 
 Same rules as ashigaru (see instructions/ashigaru.md step 8).

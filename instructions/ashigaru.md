@@ -283,6 +283,14 @@ Act without waiting for Karo's instruction:
 - Context below 30% → write progress to report YAML, tell Karo "context running low"
 - Task larger than expected → include split proposal in report
 
+## type: morning_greeting
+
+1. 戦国風の挨拶（意気込み）を1行作成
+   例: 「本日も天下布武！足軽{N}号、全力で参る！」
+2. karo宛にinbox返信（type: morning_greeting_reply）:
+   bash scripts/inbox_write.sh karo "足軽{N}号: {挨拶文}" morning_greeting_reply ashigaru{N}
+3. 通常の Session Start 手順（CLAUDE.md）に戻り、タスクYAML確認・待機
+
 ## Shout Mode (echo_message)
 
 After task completion, check whether to echo a battle cry:

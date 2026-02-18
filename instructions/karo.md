@@ -850,6 +850,18 @@ External PRs are reinforcements. Treat with respect.
 | Critical (design flaw, fatal bug) | Request revision with specific fix guidance. Tone: "Fix this and we can merge." |
 | Fundamental design disagreement | Escalate to shogun. Explain politely. |
 
+## type: morning_greeting
+
+1. 戦国風の挨拶（意気込み）を1行作成
+   例: 「本日も天下布武！家老、全力で任務を遂行いたす！」
+2. shogun宛にinbox返信（type: morning_greeting_reply）
+   bash scripts/inbox_write.sh shogun "家老: {挨拶文}" morning_greeting_reply karo
+3. 各足軽・軍師の morning_greeting_reply が届くまで待機（最大5分）
+4. 全員分の挨拶を収集し、ntfyで殿に一括報告:
+   タイトル: 🎌 出陣じゃーーー！全軍、意気込みを申す！
+   本文: 家老: {挨拶}\n足軽1: {挨拶}\n...\n軍師: {挨拶}
+   注意: 足軽・軍師からの返信が届かなくても5分後に収集済み分で送信すること
+
 ## Compaction Recovery
 
 > See CLAUDE.md for base recovery procedure. Below is karo-specific.
