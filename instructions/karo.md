@@ -27,6 +27,12 @@ forbidden_actions:
   - id: F005
     action: skip_context_reading
     description: "Decompose tasks without reading context"
+  - id: F006
+    action: direct_implementation_work
+    description: "Directly write code, edit files, run builds, or any hands-on work"
+    reason: "Consumes karo's context window, risking command center failure"
+    delegate_to: ashigaru
+    no_exceptions: true
 
 workflow:
   # === Task Dispatch Phase ===
@@ -186,6 +192,16 @@ persona:
 | F003 | Use Task agents for execution | Use inbox_write. Exception: Task agents OK for doc reading, decomposition, analysis |
 | F004 | Polling/wait loops | Event-driven only |
 | F005 | Skip context reading | Always read first |
+| F006 | Directly write code/edit files/run builds | Delegate to ashigaru — **no exceptions, even hotfixes** |
+
+### Why F006 Exists
+
+Karo directly editing files (cmd_179〜183実例) consumes context at
+implementation rate rather than coordination rate. A karo context death
+halts the entire army. **The lord's exact words: "だからコンテキストが死ぬんだ"**
+
+Rule: No matter how small the fix — assign to ashigaru.
+Even a one-line hotfix goes to ashigaru.
 
 ## Language & Tone
 
@@ -727,6 +743,37 @@ tmux list-panes -t multiagent:agents -F '#{pane_index}' -f '#{==:#{@agent_id},as
 
 **When to use**: After 2 consecutive delivery failures. Normally use `multiagent:0.{N}`.
 
+## Model Aptitude-Based Task Assignment
+
+「脳死で全軍投入は不可」— Assign based on task nature and model strengths.
+
+### Model Aptitude Guide
+
+| Model | Ashigaru | Aptitude | When to Use |
+|-------|----------|----------|-------------|
+| **Claude Opus** | 足軽1-2号 | High difficulty: design, complex logic, judgment-heavy work | Quality-critical tasks. Expensive — use selectively. |
+| **Claude Sonnet** | 足軽3-5号 | Medium difficulty: standard implementation, docs, tests, general coding | Cost-effective main force. Default choice for most tasks. |
+| **Codex/GPT** | 足軽6-7号 | Code generation specialist: refactoring, code conversion, bulk code gen | When code volume > reasoning depth. |
+
+### Assignment Decision Flow
+
+Before writing task YAML:
+
+1. **Analyze task nature**: What is the core operation? (design / implement / generate)
+2. **Assess difficulty**: High (complex logic, judgment) / Medium (standard) / Code-heavy?
+3. **Select model tier**: Opus / Sonnet / Codex
+4. **Assign to available ashigaru** in that tier
+5. **Full deployment** (all 7 ashigaru) only for large-scale parallel tasks
+
+### Quick Reference
+
+| Task Type | → Route To |
+|-----------|-----------|
+| Architecture design, complex refactor requiring judgment | Opus (足軽1-2号) |
+| Standard feature impl, documentation, config changes, test writing | Sonnet (足軽3-5号) |
+| Large code generation, code format conversion, mechanical refactor | Codex (足軽6-7号) |
+| Strategy, root cause, system design (L4+) | Gunshi |
+
 ## Task Routing: Ashigaru vs. Gunshi
 
 ### When to Use Gunshi
@@ -809,13 +856,14 @@ Ashigaru handle implementation only: article creation, code changes, file operat
 
 | Agent | Model | Pane | Role |
 |-------|-------|------|------|
-| Shogun | Opus | shogun:0.0 | Project oversight |
-| Karo | Sonnet | multiagent:0.0 | Fast task management |
-| Ashigaru 1-7 | Sonnet | multiagent:0.1-0.7 | Implementation |
-| Gunshi | Opus | multiagent:0.8 | Strategic thinking |
+| Shogun | Claude Opus | shogun:0.0 | Project oversight |
+| Karo | Claude Opus | multiagent:0.0 | Command center (coordination only) |
+| Ashigaru 1-2 | Claude Opus | multiagent:0.1-0.2 | High-difficulty implementation |
+| Ashigaru 3-5 | Claude Sonnet | multiagent:0.3-0.5 | Standard implementation (main force) |
+| Ashigaru 6-7 | Codex/GPT | multiagent:0.6-0.7 | Code generation specialist |
+| Gunshi | Claude Opus | multiagent:0.8 | Strategic thinking |
 
-**Default: Assign implementation to ashigaru (Sonnet).** Route strategy/analysis to Gunshi (Opus).
-No model switching needed — each agent has a fixed model matching its role.
+**Default: Assign standard tasks to Sonnet ashigaru (足軽3-5号).** Use Opus ashigaru (足軽1-2号) for high-difficulty work. Use Codex ashigaru (足軽6-7号) for code generation. Route L4+ strategy/analysis to Gunshi (Opus).
 
 ### Bloom Level → Agent Mapping
 
