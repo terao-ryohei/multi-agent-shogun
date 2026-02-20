@@ -1044,6 +1044,41 @@ fi
 echo ""
 
 # ═══════════════════════════════════════════════════════════════════════════════
+# STEP 6.9.1: Cloudflare Named Tunnel起動（陣太鼓公開）
+# ═══════════════════════════════════════════════════════════════════════════════
+CLOUDFLARED_LOG="$HOME/private/multi-agent-shogun/logs/cloudflared.log"
+CLOUDFLARED_PID_FILE="$HOME/.cloudflared/jindaiko.pid"
+
+if command -v cloudflared >/dev/null 2>&1 && [ -f "$HOME/.cloudflared/config.yml" ]; then
+    # 既存tunnelプロセスをkill
+    if [ -f "$CLOUDFLARED_PID_FILE" ]; then
+        _cf_old_pid=$(cat "$CLOUDFLARED_PID_FILE" 2>/dev/null)
+        if [ -n "$_cf_old_pid" ] && kill -0 "$_cf_old_pid" 2>/dev/null; then
+            kill "$_cf_old_pid" 2>/dev/null || true
+            sleep 1
+            log_info "☁️  Cloudflare Tunnel: 旧プロセス(PID:$_cf_old_pid)を停止"
+        fi
+    fi
+    pkill -f "cloudflared tunnel run" 2>/dev/null || true
+    sleep 1
+
+    # Cloudflare Named Tunnel起動
+    mkdir -p "$(dirname "$CLOUDFLARED_LOG")"
+    nohup cloudflared tunnel run jindaiko >> "$CLOUDFLARED_LOG" 2>&1 &
+    echo $! > "$CLOUDFLARED_PID_FILE"
+    sleep 2
+    _cf_pid=$(cat "$CLOUDFLARED_PID_FILE" 2>/dev/null)
+    if [ -n "$_cf_pid" ] && kill -0 "$_cf_pid" 2>/dev/null; then
+        log_info "☁️  Cloudflare Tunnel起動完了 (PID:$_cf_pid) → 固定URLで陣太鼓公開中"
+    else
+        log_info "⚠️  Cloudflare Tunnel起動失敗 — ログ確認: $CLOUDFLARED_LOG"
+    fi
+else
+    log_info "☁️  cloudflared未設定のためTunnel起動をスキップ"
+fi
+echo ""
+
+# ═══════════════════════════════════════════════════════════════════════════════
 # STEP 7: 環境確認・完了メッセージ
 # ═══════════════════════════════════════════════════════════════════════════════
 log_info "🔍 陣容を確認中..."
