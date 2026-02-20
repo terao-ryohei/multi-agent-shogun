@@ -1000,6 +1000,50 @@ fi
 echo ""
 
 # ═══════════════════════════════════════════════════════════════════════════════
+# STEP 6.9: 陣太鼓(JinDaiko)サーバー起動
+# ═══════════════════════════════════════════════════════════════════════════════
+JINDAIKO_DIR="$HOME/private/jindaiko"
+JINDAIKO_PID_FILE="$JINDAIKO_DIR/.pid"
+JINDAIKO_LOG="$HOME/private/multi-agent-shogun/logs/jindaiko.log"
+
+if [ -d "$JINDAIKO_DIR" ]; then
+    # 既存プロセスをkill（冪等性確保）
+    if [ -f "$JINDAIKO_PID_FILE" ]; then
+        _old_pid=$(cat "$JINDAIKO_PID_FILE" 2>/dev/null)
+        if [ -n "$_old_pid" ] && kill -0 "$_old_pid" 2>/dev/null; then
+            kill "$_old_pid" 2>/dev/null || true
+            sleep 1
+            log_info "🥁 陣太鼓: 旧プロセス(PID:$_old_pid)を停止"
+        fi
+    fi
+    # ポート3000の残留プロセスも念のためkill
+    _port_pid=$(lsof -ti:3000 2>/dev/null | head -1)
+    if [ -n "$_port_pid" ]; then
+        kill "$_port_pid" 2>/dev/null || true
+        sleep 1
+        log_info "🥁 陣太鼓: ポート3000の旧プロセス(PID:$_port_pid)を停止"
+    fi
+
+    # 陣太鼓サーバー起動（バックグラウンド）
+    mkdir -p "$(dirname "$JINDAIKO_LOG")"
+    (
+        cd "$JINDAIKO_DIR" || exit 1
+        nohup bun run src/index.ts >> "$JINDAIKO_LOG" 2>&1 &
+        echo $! > "$JINDAIKO_PID_FILE"
+    )
+    sleep 1
+    _new_pid=$(cat "$JINDAIKO_PID_FILE" 2>/dev/null)
+    if [ -n "$_new_pid" ] && kill -0 "$_new_pid" 2>/dev/null; then
+        log_info "🥁 陣太鼓サーバー起動完了 (PID:$_new_pid, http://localhost:3000)"
+    else
+        log_info "⚠️  陣太鼓サーバーの起動確認失敗 — ログ確認: $JINDAIKO_LOG"
+    fi
+else
+    log_info "⚠️  陣太鼓ディレクトリが見つからないためスキップ ($JINDAIKO_DIR)"
+fi
+echo ""
+
+# ═══════════════════════════════════════════════════════════════════════════════
 # STEP 7: 環境確認・完了メッセージ
 # ═══════════════════════════════════════════════════════════════════════════════
 log_info "🔍 陣容を確認中..."
