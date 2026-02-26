@@ -30,6 +30,28 @@ Run 10 AI coding agents in parallel — **Claude Code, OpenAI Codex, GitHub Copi
 
 ---
 
+## Quick Start
+
+**Requirements:** tmux, bash 4+, at least one of: [Claude Code](https://claude.ai/code) / Codex / Copilot / Kimi
+
+```bash
+git clone https://github.com/yohey-w/multi-agent-shogun
+cd multi-agent-shogun
+bash first_setup.sh          # one-time setup: config, dependencies, MCP
+bash shutsujin_departure.sh  # launch all agents
+```
+
+Type a command in the Shogun pane:
+
+> "Build a REST API for user authentication"
+
+Shogun delegates → Karo breaks it down → 7 Ashigaru execute in parallel.
+You watch the dashboard. That's it.
+
+> **Want to go deeper?** The rest of this README covers architecture, configuration, memory design, and multi-CLI setup.
+
+---
+
 ## What is this?
 
 **multi-agent-shogun** is a system that runs multiple AI coding CLI instances simultaneously, orchestrating them like a feudal Japanese army. Supports **Claude Code**, **OpenAI Codex**, **GitHub Copilot**, and **Kimi Code**.
@@ -639,6 +661,46 @@ Efficient knowledge sharing through a four-layer context system:
 | Layer 2: Project | `config/projects.yaml`, `projects/<id>.yaml`, `context/{project}.md` | Project-specific information and technical knowledge |
 | Layer 3: YAML Queue | `queue/shogun_to_karo.yaml`, `queue/tasks/`, `queue/reports/` | Task management — source of truth for instructions and reports |
 | Layer 4: Session | CLAUDE.md, instructions/*.md | Working context (wiped by `/clear`) |
+
+#### Persistent Agent Memory (`memory/MEMORY.md`)
+
+Shogun reads `memory/MEMORY.md` at every session start. It contains Lord's preferences, lessons learned, and cross-session knowledge — written by Shogun, read by Shogun.
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                    Git Repositories                          │
+│                                                              │
+│  ┌─────────────────────┐   ┌──────────────────────────┐    │
+│  │  multi-agent-shogun │   │      shogun-private        │    │
+│  │       (public OSS)  │   │   (your private repo)      │    │
+│  │                     │   │                            │    │
+│  │ scripts/            │   │ projects/client.yaml  ←──┐ │    │
+│  │ instructions/       │   │ context/my-notes.md   ←──┤ │    │
+│  │ lib/                │   │ queue/shogun_to_karo.yaml │ │    │
+│  │ memory/             │   │ memory/MEMORY.md      ←──┘ │    │
+│  │  ├─ MEMORY.md.sample│   │ config/settings.yaml       │    │
+│  │  └─ MEMORY.md  ─────┼───┼── same file, tracked here  │    │
+│  │     (gitignored)    │   │                            │    │
+│  └─────────────────────┘   └──────────────────────────┘    │
+│         ↑ anyone can fork        ↑ your data, your repo      │
+└─────────────────────────────────────────────────────────────┘
+```
+
+**How it works:** `memory/MEMORY.md` lives in the same working directory as the OSS repo, but is excluded from the OSS `.gitignore` (whitelist-based). You track it in a separate private repo using a bare git repo technique:
+
+```bash
+# One-time setup (already done by first_setup.sh)
+git init --bare ~/.shogun-private.git
+alias privategit='git --git-dir=$HOME/.shogun-private.git --work-tree=/path/to/multi-agent-shogun'
+privategit remote add origin https://github.com/YOU/shogun-private.git
+
+# Daily use
+privategit add -f memory/MEMORY.md projects/my-client.yaml
+privategit commit -m "update memory"
+privategit push
+```
+
+The OSS `.gitignore` uses a **whitelist approach** (default: exclude everything, then explicitly allow OSS files). So private files like `memory/MEMORY.md` are automatically excluded without needing explicit `gitignore` entries — just don't add them to the whitelist.
 
 This design enables:
 - Any Ashigaru can work on any project

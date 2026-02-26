@@ -67,6 +67,8 @@ MULTI_WORD = [
     ("Waxed Weathered Copper", "錆止めされた錆びた銅"),
     ("Waxed Oxidized Copper", "錆止めされた酸化した銅"),
     # --- 2 words (added for gun/machine/chemical mods) ---
+    ("Gearbox", "ギアボックス"),
+    ("Gear Box", "ギアボックス"),
     ("Sulfuric Acid", "硫酸"),
     ("Light Bulb", "電球"),
     # --- 3 words ---
@@ -295,6 +297,7 @@ SINGLE_WORD = [
     ("Gold", "金"),
     ("Steel", "鋼鉄"),
     ("Bronze", "青銅"),
+    ("Brass", "真鍮"),
     ("Silver", "銀"),
     ("Platinum", "プラチナ"),
     ("Tin", "錫"),

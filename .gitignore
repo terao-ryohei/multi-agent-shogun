@@ -103,9 +103,11 @@
 !saytask/
 !saytask/streaks.yaml.sample
 
-# Reports (requirements docs only — other reports may contain secrets)
-!reports/
-!reports/requirements_*.md
+# Reports (private — not tracked)
+
+# Memory (MEMORY.md is private; only the sample template is OSS)
+!memory/
+!memory/MEMORY.md.sample
 
 # Docs
 !docs/
