@@ -1,16 +1,11 @@
 worker_id: ashigaru3
-task_id: subtask_232b
-parent_cmd: cmd_232
-timestamp: '2026-02-25T23:51:00'
+task_id: subtask_239h
+parent_cmd: cmd_239
+timestamp: '2026-02-27T23:28:00'
 status: done
-changes_summary:
-  improvableskills_itemgroup_fixed: true
-  before: "Improvable Skills"
-  after: "スキル強化"
-  other_skillbook_found: false
-  assets_zip_updated: true
-  zip_size: 636K
-validation:
-  json_parse_ok: true
-  zip_created_ok: true
-shout: "スキルの書の旗印、「スキル強化」と改め、天下に号令を轟かせたり！"
+assets_zip:
+  path: /home/terao/private/japanese/assets.zip
+  size_bytes: 937309
+  updated_at: '2026-02-27T23:28:18'
+ntfy_sent: true
+shout: "52mod翻訳14,000キー全PASS！assets.zip 694KB→916KBに増量！天下統一の礎はここに刻まれた！"
