@@ -183,3 +183,7 @@ tests/specs/osato_lms_*
 # Android companion app
 !android/
 !android/**
+
+# iOS companion app
+!ios/
+!ios/**
