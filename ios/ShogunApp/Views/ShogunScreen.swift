@@ -2,6 +2,8 @@ import SwiftUI
 
 struct ShogunScreen: View {
     @StateObject private var viewModel = ShogunViewModel()
+    @StateObject private var speechService = SpeechService()
+    @StateObject private var audioService = AudioService()
 
     var body: some View {
         ZStack {
@@ -16,6 +18,24 @@ struct ShogunScreen: View {
                         .font(.headline)
                         .foregroundColor(Color.shogunBlack)
                     Spacer()
+                    // BGMボタン
+                    Button(action: { audioService.toggle() }) {
+                        Image(systemName: audioService.isPlaying ? "music.note" : "music.note.list")
+                            .foregroundColor(Color.shogunBlack)
+                    }
+                    // マイクボタン
+                    Button(action: {
+                        if speechService.isListening {
+                            speechService.stopListening()
+                            audioService.unduck()
+                        } else {
+                            speechService.startListening()
+                            audioService.duck()
+                        }
+                    }) {
+                        Image(systemName: speechService.isListening ? "mic.fill" : "mic")
+                            .foregroundColor(speechService.isListening ? .red : Color.shogunBlack)
+                    }
                     Circle()
                         .fill(viewModel.ssh.isConnected ? Color.green : Color.shogunCrimson)
                         .frame(width: 10, height: 10)
@@ -66,7 +86,14 @@ struct ShogunScreen: View {
                 .background(Color.shogunBlack.opacity(0.9))
             }
         }
-        .onAppear { viewModel.startUpdating() }
+        .onChange(of: speechService.transcript) { text in
+            viewModel.inputText = text
+        }
+        .onAppear {
+            audioService.configureSession()
+            Task { await speechService.requestPermission() }
+            viewModel.startUpdating()
+        }
         .onDisappear { viewModel.stopUpdating() }
     }
 }

@@ -75,6 +75,23 @@ struct SettingsScreen: View {
         } message: {
             Text(testResult ?? "")
         }
+        .onChange(of: host)        { v in syncToAppGroup("ssh_host", v) }
+        .onChange(of: port)        { v in syncToAppGroup("ssh_port", v) }
+        .onChange(of: username)    { v in syncToAppGroup("ssh_username", v) }
+        .onChange(of: password)    { v in syncToAppGroup("ssh_password", v) }
+        .onChange(of: projectPath) { v in syncToAppGroup("project_path", v) }
+        .onAppear {
+            let suite = UserDefaults(suiteName: "group.com.shogun.app")
+            suite?.set(host,        forKey: "ssh_host")
+            suite?.set(port,        forKey: "ssh_port")
+            suite?.set(username,    forKey: "ssh_username")
+            suite?.set(password,    forKey: "ssh_password")
+            suite?.set(projectPath, forKey: "project_path")
+        }
+    }
+
+    private func syncToAppGroup(_ key: String, _ value: String) {
+        UserDefaults(suiteName: "group.com.shogun.app")?.set(value, forKey: key)
     }
 
     private func testConnection() async {

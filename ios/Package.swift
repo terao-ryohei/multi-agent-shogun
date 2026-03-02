@@ -20,6 +20,13 @@ let package = Package(
             ],
             path: "ShogunApp/"
         ),
+        .target(
+            name: "ShogunShareExtension",
+            dependencies: [
+                .product(name: "Citadel", package: "Citadel"),
+            ],
+            path: "ShogunApp/ShogunShareExtension"
+        ),
         .testTarget(
             name: "ShogunAppTests",
             dependencies: ["ShogunApp"],

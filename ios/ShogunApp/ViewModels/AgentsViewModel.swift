@@ -15,11 +15,23 @@ class AgentsViewModel: ObservableObject {
     private var isRefreshing = false
 
     func startUpdating() {
+        Task { await ensureConnected() }
         updateTimer = Timer.scheduledTimer(withTimeInterval: 5.0, repeats: true) { [weak self] _ in
             guard let self else { return }
             Task { await self.fetchAllPanes() }
         }
         Task { await fetchAllPanes() }
+    }
+
+    private func ensureConnected() async {
+        guard !ssh.isConnected else { return }
+        let host = UserDefaults.standard.string(forKey: "ssh_host") ?? ""
+        let portStr = UserDefaults.standard.string(forKey: "ssh_port") ?? "22"
+        let port = Int(portStr) ?? 22
+        let username = UserDefaults.standard.string(forKey: "ssh_username") ?? ""
+        let password = UserDefaults.standard.string(forKey: "ssh_password") ?? ""
+        guard !host.isEmpty, !username.isEmpty else { return }
+        try? await ssh.connect(host: host, port: port, username: username, password: password)
     }
 
     func stopUpdating() {

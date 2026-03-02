@@ -107,6 +107,8 @@ struct PaneFullScreenView: View {
     let onSendCommand: (String) -> Void
     let onRefresh: () -> Void
 
+    @StateObject private var speechService = SpeechService()
+    @StateObject private var audioService = AudioService()
     @State private var commandText = ""
     private let lines: [String]
 
@@ -133,6 +135,24 @@ struct PaneFullScreenView: View {
                         .font(.system(.body, design: .monospaced))
                         .foregroundColor(Color.shogunGold)
                         .frame(maxWidth: .infinity, alignment: .leading)
+                    // BGMボタン
+                    Button(action: { audioService.toggle() }) {
+                        Image(systemName: audioService.isPlaying ? "music.note" : "music.note.list")
+                            .foregroundColor(Color.shogunGold)
+                    }
+                    // マイクボタン
+                    Button(action: {
+                        if speechService.isListening {
+                            speechService.stopListening()
+                            audioService.unduck()
+                        } else {
+                            speechService.startListening()
+                            audioService.duck()
+                        }
+                    }) {
+                        Image(systemName: speechService.isListening ? "mic.fill" : "mic")
+                            .foregroundColor(speechService.isListening ? .red : Color.shogunGold)
+                    }
                     Button(action: onRefresh) {
                         Image(systemName: "arrow.clockwise")
                             .foregroundColor(Color.shogunGold)
@@ -190,6 +210,13 @@ struct PaneFullScreenView: View {
                 .padding(8)
                 .background(Color(white: 0.12))
             }
+        }
+        .onChange(of: speechService.transcript) { text in
+            commandText = text
+        }
+        .onAppear {
+            audioService.configureSession()
+            Task { await speechService.requestPermission() }
         }
     }
 }

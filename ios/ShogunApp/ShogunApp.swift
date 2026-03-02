@@ -2,9 +2,27 @@ import SwiftUI
 
 @main
 struct ShogunApp: App {
+    @Environment(\.scenePhase) private var scenePhase
+    @StateObject private var sshService = SSHService()
+
     var body: some Scene {
         WindowGroup {
             ContentView()
+                .environmentObject(sshService)
+        }
+        .onChange(of: scenePhase) { newPhase in
+            switch newPhase {
+            case .active:
+                Task {
+                    if !sshService.isConnected {
+                        try? await sshService.reconnect()
+                    }
+                }
+            case .background:
+                break
+            default:
+                break
+            }
         }
     }
 }
@@ -15,7 +33,7 @@ struct ContentView: View {
     var body: some View {
         TabView(selection: $selectedTab) {
             NavigationStack {
-                PlaceholderScreen(title: "将軍")
+                ShogunScreen()
             }
             .tabItem {
                 Image(systemName: "star.fill")
@@ -24,7 +42,7 @@ struct ContentView: View {
             .tag(0)
 
             NavigationStack {
-                PlaceholderScreen(title: "エージェント")
+                AgentsScreen()
             }
             .tabItem {
                 Image(systemName: "list.bullet")
@@ -33,7 +51,7 @@ struct ContentView: View {
             .tag(1)
 
             NavigationStack {
-                PlaceholderScreen(title: "ダッシュボード")
+                DashboardScreen()
             }
             .tabItem {
                 Image(systemName: "house.fill")
@@ -52,19 +70,5 @@ struct ContentView: View {
         }
         .tint(.shogunGold)
         .preferredColorScheme(.dark)
-    }
-}
-
-struct PlaceholderScreen: View {
-    let title: String
-
-    var body: some View {
-        ZStack {
-            Color.shogunBlack.ignoresSafeArea()
-            Text(title)
-                .font(.title)
-                .foregroundColor(.shogunIvory)
-        }
-        .navigationTitle(title)
     }
 }
