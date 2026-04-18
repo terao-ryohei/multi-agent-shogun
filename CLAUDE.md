@@ -75,23 +75,41 @@ language:
 
 **CRITICAL**: dashboard.md is secondary data (karo's summary). Primary data = YAML files. Always verify from YAML.
 
-## /clear Recovery (ashigaru/gunshi only)
+## /clear Recovery (ashigaru only)
 
 Lightweight recovery using only CLAUDE.md (auto-loaded). Do NOT read instructions/*.md (cost saving).
 
 ```
-Step 1: tmux display-message -t "$TMUX_PANE" -p '#{@agent_id}' → ashigaru{N} or gunshi
-Step 2: (gunshi only) mcp__memory__read_graph (skip on failure). Ashigaru skip — task YAML is sufficient.
-Step 3: Read queue/tasks/{your_id}.yaml →
+Step 1: tmux display-message -t "$TMUX_PANE" -p '#{@agent_id}' → ashigaru{N}
+Step 2: Read queue/tasks/{your_id}.yaml →
         assigned=work (execute task), idle=wait, done=wait (DO NOT re-report)
-Step 4: If task has "project:" field → read context/{project}.md
+Step 3: If task has "project:" field → read context/{project}.md
         If task has "target_path:" → read that file
-Step 5: Start work (only if assigned=work)
+Step 4: Start work (only if assigned=work)
 ```
 
-**CRITICAL**: Steps 1-3を完了するまでinbox処理するな。`inboxN` nudgeが先に届いても無視し、自己識別を必ず先に終わらせよ。
+**CRITICAL**: Steps 1-2を完了するまでinbox処理するな。`inboxN` nudgeが先に届いても無視し、自己識別を必ず先に終わらせよ。
 
-Forbidden after /clear: reading instructions/*.md (1st task), polling (F004), contacting humans directly (F002). Trust task YAML only — pre-/clear memory is gone.
+Forbidden after /clear (ashigaru): reading instructions/*.md (1st task), polling (F004), contacting humans directly (F002). Trust task YAML only — pre-/clear memory is gone.
+
+## /clear Recovery (karo / gunshi — command-layer agents)
+
+**軽量復帰は不可**。家老は persona + dashboard 責務 + inbox 三重責任、軍師は戦略 state + QC 責務を持つ command-layer agent ゆえ、/clear 後は **Session Start 完全手順（Step 1-5 全て）を必ず実行**せよ。
+
+```
+Step 1: tmux display-message -t "$TMUX_PANE" -p '#{@agent_id}' → karo or gunshi
+Step 2: mcp__memory__read_graph — restore rules, preferences, lessons
+Step 3: (karo only) Read memory/MEMORY.md if present
+Step 4: **Read instructions/{your_id}.md** — 絶対省略不可。persona・speech style・forbidden_actions を再確立
+Step 5: Rebuild state from YAML (queue/tasks/, queue/inbox/, queue/reports/), then start work
+```
+
+**Forbidden after /clear (karo/gunshi)**:
+- auto-recovery メッセージの「task YAML 再読」だけで業務再開すること — 必ず Step 4 の instructions/*.md 再読を先に済ませよ
+- persona 確立前に足軽/軍師報告を大量処理すること（三人称化・役職混乱の原因）
+- 自 pane の `tmux capture-pane` 実行（自己観察ループの入口）
+
+**Rationale**: 2026-04-18 の家老役職混乱事例にて、auto-recovery prompt が task YAML のみ再読を指示し instructions/karo.md を迂回した結果、persona 不在のまま業務復帰し三人称化・メタ反省ループが発生した。command-layer agent は軽量復帰不可。
 
 ## Summary Generation (compaction)
 
