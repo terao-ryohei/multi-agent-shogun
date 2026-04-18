@@ -334,11 +334,23 @@ try:
             pass  # If task YAML is unreadable, proceed with auto-recovery as safety net
 
     now = datetime.datetime.now(datetime.timezone.utc).astimezone()
-    msg = {
-        "content": (
+    # Command-layer agents (karo, gunshi, shogun) need full persona re-establishment
+    # after /clear. Auto-recovery with task YAML alone bypasses Session Start Step 4
+    # (instructions/*.md re-read), causing persona drift / role confusion.
+    # Ashigaru keeps lightweight recovery (task YAML only) per CLAUDE.md.
+    if agent_id in ("karo", "gunshi", "shogun"):
+        content = (
+            f"[auto-recovery] /clear 後の再着手通知。"
+            f"**最優先**: instructions/{agent_id}.md を再読し persona・speech style・forbidden_actions を再確立せよ。"
+            f"その後、queue/tasks/{agent_id}.yaml および queue/inbox/{agent_id}.yaml を再読し、assigned タスク/未読メッセージを処理せよ。"
+        )
+    else:
+        content = (
             f"[auto-recovery] /clear 後の再着手通知。"
             f"queue/tasks/{agent_id}.yaml を再読し、assigned タスクを即時再開せよ。"
-        ),
+        )
+    msg = {
+        "content": content,
         "from": "inbox_watcher",
         "id": f"msg_auto_recovery_{now.strftime('%Y%m%d_%H%M%S')}_{uuid.uuid4().hex[:8]}",
         "read": False,
