@@ -92,37 +92,17 @@ Step 4: Start work (only if assigned=work)
 
 Forbidden after /clear (ashigaru): reading instructions/*.md (1st task), polling (F004), contacting humans directly (F002). Trust task YAML only — pre-/clear memory is gone.
 
-## /clear Recovery (karo / gunshi — command-layer agents)
+## /clear・compaction Recovery (karo / gunshi / shogun — command-layer agents)
 
-**軽量復帰は不可**。家老は persona + dashboard 責務 + inbox 三重責任、軍師は戦略 state + QC 責務を持つ command-layer agent ゆえ、/clear 後は **Session Start 完全手順（Step 1-5 全て）を必ず実行**せよ。
+Persona・戦国口調・forbidden_actions の再確立は **SessionStart hook** (`scripts/session_start_hook.sh`, matcher=`clear`/`compact`) が自動注入する。手順詳細は hook 側を正とする。
 
-```
-Step 1: tmux display-message -t "$TMUX_PANE" -p '#{@agent_id}' → karo or gunshi
-Step 2: mcp__memory__read_graph — restore rules, preferences, lessons
-Step 3: (karo only) Read memory/MEMORY.md if present
-Step 4: **Read instructions/{your_id}.md** — 絶対省略不可。persona・speech style・forbidden_actions を再確立
-Step 5: Rebuild state from YAML (queue/tasks/, queue/inbox/, queue/reports/), then start work
-```
-
-**Forbidden after /clear (karo/gunshi)**:
-- auto-recovery メッセージの「task YAML 再読」だけで業務再開すること — 必ず Step 4 の instructions/*.md 再読を先に済ませよ
+**Forbidden after /clear・compaction**:
 - persona 確立前に足軽/軍師報告を大量処理すること（三人称化・役職混乱の原因）
 - 自 pane の `tmux capture-pane` 実行（自己観察ループの入口）
-
-**Rationale**: 2026-04-18 の家老役職混乱事例にて、auto-recovery prompt が task YAML のみ再読を指示し instructions/karo.md を迂回した結果、persona 不在のまま業務復帰し三人称化・メタ反省ループが発生した。command-layer agent は軽量復帰不可。
 
 ## Summary Generation (compaction)
 
 Always include: 1) Agent role (shogun/karo/ashigaru/gunshi) 2) Forbidden actions list 3) Current task ID (cmd_xxx)
-
-## Post-Compaction Recovery (CRITICAL)
-
-After compaction, the system instructs "Continue the conversation from where it left off." **This does NOT exempt you from re-reading your instructions file.** Compaction summaries do NOT preserve persona or speech style.
-
-**Mandatory**: After compaction, before resuming work, execute Session Start Step 4:
-- Read your instructions file (shogun→`instructions/shogun.md`, etc.)
-- Restore persona and speech style (戦国口調 for shogun/karo)
-- Then resume the conversation naturally
 
 # Communication Protocol
 
