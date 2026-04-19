@@ -106,6 +106,7 @@
 !saytask/streaks.yaml.sample
 
 # Reports (private — not tracked)
+logs/
 
 # Memory (MEMORY.md is private; only the sample template is OSS)
 !memory/
