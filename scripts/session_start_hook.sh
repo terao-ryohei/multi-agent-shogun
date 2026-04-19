@@ -11,6 +11,11 @@
 #   以降、起動時に Session Start が発火せず、persona 未確立で「自己紹介して」に対し
 #   全エージェントが「我は将軍」と誤認する事故が発生 (2026-04-19)。
 #   SessionStart hook で確定的に Session Start 手順を注入し、/clear・compaction も同時カバーする。
+#
+# Note: ashigaru5(Codex CLI), ashigaru6(Codex CLI) は Claude Code hook 対象外。
+# この hook は Claude Code セッションのみで発火する。
+# Codex CLI 環境では TMUX_PANE が設定されても @agent_id が未設定のため
+# silent exit となり、ログも残らない（正常動作）。
 
 set -uo pipefail
 
@@ -23,6 +28,11 @@ fi
 if [ -z "$AGENT_ID" ]; then
     exit 0
 fi
+
+LOG_DIR="$(dirname "$0")/../logs"
+mkdir -p "$LOG_DIR" || true
+echo "[$(date -Iseconds)] $AGENT_ID session_start_hook fired" \
+    >> "$LOG_DIR/session_start_hook.log" || true
 
 case "$AGENT_ID" in
     shogun|karo|gunshi)
